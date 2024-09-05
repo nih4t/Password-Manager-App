@@ -3,12 +3,13 @@ from tkinter import messagebox
 import random
 import string
 import pyperclip
+import json
 
 # Generate Password
 def generate_password():
     entry_password.delete(0, END)
     characters = string.ascii_letters + string.digits + string.punctuation
-    password = ''.join(random.choice(characters) for i in range(16))
+    password = ''.join(random.choice(characters) for _ in range(16))
     entry_password.insert(0, password)
     pyperclip.copy(password)
 
@@ -26,12 +27,28 @@ def save():
                                                   f"{email} \nPassword: {password} \n\nIs it okay to save?")
 
         if is_ok:
-            with open("data.txt", "a") as data:
-                data.write(f"{website} | {email} | {password}\n")
+            new_data = {
+                website: {
+                    "email": email,
+                    "password": password
 
-            entry_password.delete(0, END)
-            entry_email_uname.delete(0, END)
-            entry_website.delete(0, END)
+                }
+            }
+            try:
+                with open("data.json", "r") as data_file:
+                    data = json.load(data_file)
+
+            except (FileNotFoundError, json.decoder.JSONDecodeError):
+                with open("data.json", "w") as data_file:
+                    json.dump(new_data, data_file, indent=4)
+            else:
+                data.update(new_data)
+                with open("data.json", "w") as data_file:
+                    json.dump(data, data_file, indent=4)
+            finally:
+                entry_password.delete(0, END)
+                entry_email_uname.delete(0, END)
+                entry_website.delete(0, END)
 
 
 
